@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <style> 
+    html, body {
+    height: 100%; /* يخلي الصفحة كلها تاخد طول الشاشة بالكامل */
+    margin: 0; /* يلغي أي هوامش */
+    padding: 0; /* يلغي أي مسافات */
+}
+#map {
+    height: calc(100vh - 100px); /* 100vh طول الشاشة بالكامل ناقص الهيدر */
+    width: 100%;
+}
+    </style>
+      <style>
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+              background-color: #efAF50;
+            color: white;
+            padding: 5px;
+            text-align: center;
+            font-size: 24px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            height: 80px; /* ارتفاع ثابت للهيدر */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .coordinate {
+            position: absolute;
+            bottom: 10px;
+            right: 40%;
+        }
+        .leaflet-popup-content-wrapper{
+            background-color: #000;
+            color : #fff;
+            border: 2px solid rgb(228, 214, 11);
+            border-radius:0px;
+        }
+        
+    </style>
+
+</head>
+<body>
+    <header>
+        <h1>مرحبا بكم في موقع خدمات ذوي الاعاقة في محافظة الفيوم </h1>
+    </header>
+      
+    <div id="map">
+        <div class="leaflet-control coordinate"> </div>
+    </div>
+</body>
+</html>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="atm.js"></script>
+    <script>
+    var map = L.map('map').setView([ 29.3110021,30.8428497 ], 14);
+   
+
+    var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    });
+    osm.addTo(map);
+    
+
+// بداية الماركر او العلامات 
+    var marker=L.marker([29.3110021,30.8428497]).addTo(map);
+    var ss =marker.bindPopup('هذه محافظة الفيوم ').openPopup();
+    ss.addTo(map)
+
+//اضافة طبقة geoJSON 
+// لا حول ولا قوة الا بالله 
+
+   var geodata= L.geoJSON(geo,{
+    onEachFeature: function (feature, layer) {
+            layer .bindPopup(' <b>نوع المكنة:</b>' +feature.properties.ATM_TYPE)
+        }}).addTo(map)
+      
+
+// هنبدأ نطبق على اللير كنترول وده هيسمع في التحكم في اللير بتاع الماب ،، 
+
+    var baseMaps = {
+    "خريطة الاساس": osm,
+
+    };
+    var overlayMaps = {
+    "محافظة الفيوم": marker,
+    ' ETM ' : geodata,
+    
+    
+    };
+    var layerControl = L.control.layers(baseMaps, overlayMaps,{collapsed:false}).addTo(map);
+
+
+
+    // event اضافة احاثي مكان الموس 
+
+
+// map.on('mousemove',function(e){
+   // document.getElementsByClassName ('coordinate')[0].innerHTML = 'lat: ' + e.latlng.lat +  ' lng: '+e.latlng.lng ;
+    //console.log('lat: ' + e.latlng.lat, 'lng: '+e.latlng.lng)
+
+//});
+
+//     ###لايف لوكيشن المتابعة اللحظية لوقع المستخدم ###
+
+if (!navigator.geolocation) {
+    console.log('your brouser doesnot support this geo location feature')
+} else {
+    // ست هن ترفل دي مسؤولة عن تحديث الموقع بتاع المستخدم ف كل 5000 ملي ثانية اى كل 5 ثواني هيتم تحديث موقع المستخدم 
+    setInterval(() => {
+        navigator.geolocation.getCurrentPosition(getPosition)
+    }, 5000);
+
+
+
+    var marker2 ,circle;
+}
+function getPosition(position){
+    var lat = position.coords.latitude 
+    var long = position.coords.longitude
+    var accuracy = position.coords.accuracy
+
+// كده هيعمل دايرة وسهم ع الموثع الجديد بتاعك كل 5 ثواني 
+// الكود اللى جي عشان نمسح الجديد
+if (marker2) {
+    map.removeLayer(marker2)
+}
+if (circle) {
+    map.removeLayer(circle)
+}
+
+    // اضافة علامة بموقع المستخدم 
+     marker2= L.marker([lat, long])
+    // اضافة دايرة بنطاق دقة المستخدم 
+     circle =L.circle([lat,long],{radius:accuracy })
+    var featureGroup =L.featureGroup ([ marker2 , circle ]).addTo(map)
+    map.fitBounds(featureGroup.getBounds())
+
+}
+
+
+
+
+
+
+</script>
+
+ 
+      
+     
